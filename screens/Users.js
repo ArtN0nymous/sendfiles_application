@@ -1,20 +1,59 @@
-import React from "react";
+import React,{useEffect,useState} from "react";
+import firebase from "../database/firebase";
 import { View, StyleSheet,Text,Button,Dimensions,FlatList,Image, TouchableOpacity } from "react-native";
+import Storage from "react-native-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function({navigation}){
+    const db= firebase.db;
+    const auth=firebase.auth;
     const numColumns = 2;
-    const data = [{name:'usuario1',url_img:'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-High-Quality-Image.png'},{name:'usuario2',url_img:'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-High-Quality-Image.png'}];
+    const [datos,setDatos]=useState([]);
+    var localstorage=new Storage({
+        size:1000,
+        storageBackend:AsyncStorage,
+        defaultExpires:null,
+        enableCache:false
+    });
+    global.localStorage=localstorage;
+    //const data = [{name:'usuario1',url_img:'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-High-Quality-Image.png'},{name:'usuario2',url_img:'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-High-Quality-Image.png'}];
     const formatData = (data,numColumns)=>{
         const n_filas = Math.floor(data.length/numColumns);
         let n_element_lastrow = data.length-(n_filas);
         return data;
     }
+    const [btnRegistro,setBtnRegistro]=useState('flex');
+    const [btnLogin,setBetnLogin]=useState('none');
     const header = (
         <>
             <View style={styles.contenedor_head}>
-                <Button style={styles.register_button} title='Registro' onPress={()=>navigation.navigate('Registro')} />
+                <View style={{display:btnRegistro}}>
+                    <Button style={styles.register_button} title='Registrarme' onPress={()=>navigation.navigate('Registro')} />
+                </View>
+                <View style={{display:btnLogin}}>
+                    <Button style={styles.register_button} title='Login' onPress={()=>navigation.navigate('Login')} />
+                </View>
             </View>
         </>
     );
+    useEffect(()=>{
+        try{
+            localstorage.load({key:'user'}).then((result)=>{
+                console.log(result);
+                let data = [];
+                db.collection('users').onSnapshot((result)=>{
+                    result.forEach((doc)=>{
+                        data.push(doc);
+                    });
+                    setDatos(data);
+                });
+                setBtnRegistro('none');
+            }).catch((error)=>{
+                setBetnLogin('flex');
+            });
+        }catch(error){
+            console.log(error.code+' '+error.message);
+        }
+    },[])
     const footer = (
         <>
         <View>
@@ -25,20 +64,21 @@ export default function({navigation}){
     const renderItem = ({item,index})=>{
         return(
             <>
-                <TouchableOpacity onPress={()=>navigation.navigate('Detalles',{item:item})} activeOpacity={0.6}>
+                <TouchableOpacity onPress={()=>navigation.navigate('Detalles',{item:item.data()})} activeOpacity={0.6}>
                     <View style={styles.contenedor_tarjeta}>
                         <View style={styles.row}>
-                            <Image source={{uri:item.url_img}} style={styles.img_profile_tarjet}/>
-                            <Text>{item.name}</Text>
+                            <Image source={{uri:'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-High-Quality-Image.png'}} style={styles.img_profile_tarjet}/>
+                            <Text>{item.data().name}</Text>
                         </View>
                     </View>
                 </TouchableOpacity>
+                
             </>
         );
     }
     return(
         <View style={styles.fondo}>
-            <FlatList ListHeaderComponent={header}  ListFooterComponent={footer} data={formatData(data,numColumns)} renderItem={renderItem} numColumns={numColumns}/>
+            <FlatList ListHeaderComponent={header}  ListFooterComponent={footer} data={formatData(datos,numColumns)} renderItem={renderItem} numColumns={numColumns}/>
         </View>
     );
 }

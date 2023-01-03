@@ -5,7 +5,7 @@ export default function({route,navigation}) {
     console.log(item);
   return (
     <View style={styles.fondo}>
-        <Image source={{uri:item.url_img}} style={styles.img_user}/>
+        <Image source={{uri:'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-High-Quality-Image.png'}} style={styles.img_user}/>
         <Text style={styles.text_details}>{item.name}</Text>
         <Button title='Enviar solicitud'/>
         <Button title='Enviar archivo' style={styles.btn_files}/>
