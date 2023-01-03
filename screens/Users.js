@@ -23,6 +23,7 @@ export default function({navigation}){
     }
     const [btnRegistro,setBtnRegistro]=useState('flex');
     const [btnLogin,setBetnLogin]=useState('none');
+    const [btnLogout,setBtnLogout]=useState('none');
     const header = (
         <>
             <View style={styles.contenedor_head}>
@@ -32,13 +33,18 @@ export default function({navigation}){
                 <View style={{display:btnLogin}}>
                     <Button style={styles.register_button} title='Login' onPress={()=>navigation.navigate('Login')} />
                 </View>
+                <View style={{display:btnLogout}}>
+                    <Button style={styles.register_button} title='Cerrar Sesión' onPress={()=>logout()} />
+                </View>
             </View>
         </>
     );
     useEffect(()=>{
+        loadData();
+    },[])
+    function loadData(){
         try{
             localstorage.load({key:'user'}).then((result)=>{
-                console.log(result);
                 let data = [];
                 db.collection('users').onSnapshot((result)=>{
                     result.forEach((doc)=>{
@@ -47,13 +53,24 @@ export default function({navigation}){
                     setDatos(data);
                 });
                 setBtnRegistro('none');
+                setBtnLogout('flex');
             }).catch((error)=>{
                 setBetnLogin('flex');
             });
         }catch(error){
             console.log(error.code+' '+error.message);
         }
-    },[])
+    }
+    const logout=async()=>{
+        await auth.signOut().then((result)=>{
+            localstorage.remove({key:'user'});
+            loadData();
+            setBtnLogout('none');
+            setBtnRegistro('flex');
+        }).catch((error)=>{
+            console.log(error.code+' '+error.message);
+        });
+    }
     const footer = (
         <>
         <View>
