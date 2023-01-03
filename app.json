@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "practica-firebase-files",
+    "slug": "practica-firebase-files",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
